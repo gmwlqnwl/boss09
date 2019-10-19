@@ -643,7 +643,7 @@ async def on_ready():
 	print("===========")
 
 	
-	await joinVoiceChannel()
+	#await joinVoiceChannel()
 	all_channels = client.get_all_channels()
 	
 	for channel1 in all_channels:
