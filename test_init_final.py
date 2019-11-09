@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*- 
 
-################ V7 #####################
+################ V8 #####################
 
 import os
 import sys
@@ -55,6 +55,9 @@ channel_voice_name = []
 channel_voice_id = []
 channel_type = []
 
+FixedBossDateData = []
+indexFixedBossname = []
+
 client = discord.Client()
 
 access_token = os.environ["BOT_TOKEN"]			
@@ -105,6 +108,9 @@ def init():
 	global channel_type
 	global LoadChk
 	
+	global indexFixedBossname
+	global FixedBossDateData
+
 	global endTime
 	
 	global gc #정산
@@ -112,6 +118,8 @@ def init():
 	
 	tmp_bossData = []
 	tmp_fixed_bossData = []
+	FixedBossDateData = []
+	indexFixedBossname = []
 	f = []
 	fb = []
 	#print("test")
@@ -130,6 +138,16 @@ def init():
 	file_data2 = base64.b64decode(fixed_inidata.content)
 	file_data2 = file_data2.decode('utf-8')
 	fixed_inputData = file_data2.split('\n')
+
+	for i in range(len(fixed_inputData)):
+		FixedBossDateData.append(fixed_inputData[i])
+
+	index_fixed = 0
+
+	for value in FixedBossDateData:
+		if value.find('bossname') != -1:
+			indexFixedBossname.append(index_fixed)
+		index_fixed = index_fixed + 1
 
 	for i in range(inputData.count('\r')):
 		inputData.remove('\r')
@@ -169,16 +187,7 @@ def init():
 		
 	if basicSetting[7] != "":
 		basicSetting[7] = int(basicSetting[7])
-	#print (inputData, len(inputData))
-	
-	### 채널 고정###
-	#basicSetting[6] = int('597781866681991198') #보이스채널ID
-	#basicSetting[7] = int('597782016607649829') #택스트채널ID
-	
-	bossNum = int(len(boss_inputData)/5)
 
-	fixed_bossNum = int(len(fixed_inputData)/5) 
-	
 	tmp_now = datetime.datetime.now() + datetime.timedelta(hours = int(basicSetting[0]))
 	
 	if int(basicSetting[13]) == 0 :
@@ -188,12 +197,20 @@ def init():
 		endTime = tmp_now.replace(hour=int(basicSetting[4]), minute=int(basicSetting[5]), second = int(0))
 		if endTime < tmp_now :			
 			endTime = endTime + datetime.timedelta(days=int(basicSetting[13]))
+
+	### 채널 고정###
+	#basicSetting[6] = int('597781866681991198') #보이스채널ID
+	#basicSetting[7] = int('597782016607649829') #택스트채널ID
+	
+	bossNum = int(len(boss_inputData)/5)
+
+	fixed_bossNum = int(len(fixed_inputData)/6) 
 	
 	for i in range(bossNum):
 		tmp_bossData.append(boss_inputData[i*5:i*5+5])
 
 	for i in range(fixed_bossNum):
-		tmp_fixed_bossData.append(fixed_inputData[i*5:i*5+5]) 
+		tmp_fixed_bossData.append(fixed_inputData[i*6:i*6+6]) 
 		
 	#print (tmp_bossData)
 		
@@ -237,21 +254,25 @@ def init():
 		fb.append(tmp_fixed_bossData[j][0][11:])                  #fixed_bossData[0] : 보스명
 		fb.append(tmp_fixed_bossData[j][1][11:tmp_fixed_len])     #fixed_bossData[1] : 시
 		fb.append(tmp_fixed_bossData[j][1][tmp_fixed_len+1:])     #fixed_bossData[2] : 분
-		fb.append(tmp_fixed_bossData[j][3][20:])                  #fixed_bossData[3] : 분전 알림멘트
-		fb.append(tmp_fixed_bossData[j][4][13:])                  #fixed_bossData[4] : 젠 알림멘트
+		fb.append(tmp_fixed_bossData[j][4][20:])                  #fixed_bossData[3] : 분전 알림멘트
+		fb.append(tmp_fixed_bossData[j][5][13:])                  #fixed_bossData[4] : 젠 알림멘트
 		fb.append(tmp_fixed_bossData[j][2][12:tmp_fixedGen_len])  #fixed_bossData[5] : 젠주기-시
 		fb.append(tmp_fixed_bossData[j][2][tmp_fixedGen_len+1:])  #fixed_bossData[6] : 젠주기-분
+		fb.append(tmp_fixed_bossData[j][3][12:16])                #fixed_bossData[7] : 시작일-년	
+		fb.append(tmp_fixed_bossData[j][3][17:19])                #fixed_bossData[8] : 시작일-월
+		fb.append(tmp_fixed_bossData[j][3][20:22])                #fixed_bossData[9] : 시작일-일
 		fixed_bossData.append(fb)
 		fb = []
 		fixed_bossFlag.append(False)
 		fixed_bossFlag0.append(False)
-		fixed_bossTime.append(tmp_fixed_now.replace(hour=int(fixed_bossData[j][1]), minute=int(fixed_bossData[j][2]), second = int(0)))
+		fixed_bossTime.append(tmp_fixed_now.replace(year = int(fixed_bossData[j][7]), month = int(fixed_bossData[j][8]), day = int(fixed_bossData[j][9]), hour=int(fixed_bossData[j][1]), minute=int(fixed_bossData[j][2]), second = int(0)))
 		if fixed_bossTime[j] < tmp_fixed_now :
-			fixed_bossTime[j] = fixed_bossTime[j] + datetime.timedelta(hours=int(fixed_bossData[j][5]), minutes=int(fixed_bossData[j][6]), seconds = int(0))
+			while fixed_bossTime[j] < tmp_fixed_now :
+				fixed_bossTime[j] = fixed_bossTime[j] + datetime.timedelta(hours=int(fixed_bossData[j][5]), minutes=int(fixed_bossData[j][6]), seconds = int(0))
 
-	scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive'] #정산
-	
-	credentials = ServiceAccountCredentials.from_json_keyfile_name(basicSetting[10], scope) #정산
+	if basicSetting[10] !="":
+		scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive'] #정산
+		credentials = ServiceAccountCredentials.from_json_keyfile_name(basicSetting[10], scope) #정산
 
 init()
 
@@ -324,6 +345,7 @@ async def task():
 						bossTimeString[i] = tmp_bossTime[i].strftime('%H:%M:%S')
 						bossDateString[i] = tmp_bossTime[i].strftime('%Y-%m-%d')
 				await dbSave()
+				await FixedBossDateSave()
 				#await client.get_channel(channel).send('<갑자기 인사해도 놀라지마세요!>', tts=False)
 				print("보탐봇재시작!")
 				endTime = endTime + datetime.timedelta(days = int(basicSetting[13]))
@@ -572,6 +594,28 @@ async def dbLoad():
 		LoadChk = 1
 		print ("보스타임 정보가 없습니다.")
 
+#고정보스 날짜저장
+async def FixedBossDateSave():
+	global fixed_bossData
+	global fixed_bossTime
+	global fixed_bossNum
+	global FixedBossDateData
+	global indexFixedBossname
+
+	for value in indexFixedBossname:
+		for i in range(fixed_bossNum):
+			if FixedBossDateData[value].find(fixed_bossData[i][0]) != -1:
+				FixedBossDateData[value + 3] = 'startDate = '+ fixed_bossTime[i].strftime('%Y-%m-%d') + '\n'
+
+	FixedBossDateDataSTR = ""
+	for j in range(len(FixedBossDateData)):
+		pos = len(FixedBossDateData[j])
+		tmpSTR = FixedBossDateData[j][:pos-1] + '\r\n'
+		FixedBossDateDataSTR += tmpSTR
+
+	contents = repo.get_contents("fixed_boss.ini")
+	repo.update_file(contents.path, "bossDB", FixedBossDateDataSTR, contents.sha)
+
 #음성채널 입장
 async def JointheVC(VCchannel, TXchannel):
 	global chkvoicechannel
@@ -743,6 +787,9 @@ while True:
 		
 		global chflg
 		global LoadChk
+		
+		global indexFixedBossname
+		global FixedBossDateData
 		
 		global gc #정산
 		global credentials	#정산
@@ -1269,6 +1316,7 @@ while True:
 						bossTimeString[i] = tmp_bossTime[i].strftime('%H:%M:%S')
 						bossDateString[i] = tmp_bossTime[i].strftime('%Y-%m-%d')
 				await dbSave()
+				await FixedBossDateSave()
 				#await client.get_channel(channel).send('<보탐봇 재시작 중... 갑자기 인사해도 놀라지마세요!>', tts=False)
 				print("보탐봇강제재시작!")
 				await asyncio.sleep(2)
@@ -1333,6 +1381,7 @@ while True:
 			if message.content == '!초기화' :
 				basicSetting = []
 				bossData = []
+				fixed_bossData = []
 
 				bossTime = []
 				tmp_bossTime = []
@@ -1350,6 +1399,9 @@ while True:
 				fixed_bossFlag0 = []
 				bossMungFlag = []
 				bossMungCnt = []
+
+				FixedBossDateData = []
+				indexFixedBossname = []
 				
 				init()
 
@@ -1619,6 +1671,7 @@ while True:
 				temp_bossTime1 = []
 				ouput_bossData = []
 				aa = []
+				fixed_datelist = []
 				
 				for i in range(bossNum):
 					if bossMungFlag[i] == True :
@@ -1647,10 +1700,20 @@ while True:
 						ouput_bossData.append(aa)
 						aa = []
 
-				fixed_information = ''
+				fixed_information = ''								
 				for i in range(fixed_bossNum):
-						tmp_timeSTR = fixed_bossTime[i].strftime('%H:%M:%S')
-						fixed_information += tmp_timeSTR + ' : ' + fixed_bossData[i][0] + '\n'
+					fixed_datelist.append(fixed_bossTime[i])
+
+				fixed_datelist = list(set(fixed_datelist))
+
+				for timestring1 in sorted(fixed_datelist):
+					for i in range(fixed_bossNum):
+						if timestring1 == fixed_bossTime[i]:
+							if (datetime.datetime.now() + datetime.timedelta(hours=int(basicSetting[0]))).strftime('%Y-%m-%d') == fixed_bossTime[i].strftime('%Y-%m-%d'):
+								tmp_timeSTR = fixed_bossTime[i].strftime('%H:%M:%S')
+							else:
+								tmp_timeSTR = '[' + fixed_bossTime[i].strftime('%Y-%m-%d') + '] ' + fixed_bossTime[i].strftime('%H:%M:%S')
+							fixed_information += tmp_timeSTR + ' : ' + fixed_bossData[i][0] + '\n'
 
 				if len(fixed_information) != 0:
 					fixed_information = "```" + fixed_information + "```"
