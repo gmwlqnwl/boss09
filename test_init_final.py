@@ -2027,9 +2027,9 @@ while True:
 							)
 					await msg.channel.send(embed=embed, tts=False)
 
-		       ################ 포인트확인 ################ 
+			################ 포인트확인 ################ 
 		
-		    if message.content.startswith("!포인트"):
+			if message.content.startswith("!포인트"):
 					SearchID = hello[len("!포인트")+1:]
 					gc = gspread.authorize(credentials)
 					wks = gc.open(basicSetting[12]).worksheet("포인트내역")
