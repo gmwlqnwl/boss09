@@ -2029,7 +2029,6 @@ while True:
 
 			################ 포인트확인 ################ 
 					if message.content.startswith(command[22]):
-				if basicSetting[10] !="" and basicSetting[12] !="" and basicsetting[14] !="" and basicSetting[15] !="" and basicSetting[16] !=""  :
 					SearchID = hello[len(command[22])+1:]
 					gc = gspread.authorize(credentials)
 					wks = gc.open(basicSetting[12]).worksheet(포인트내역)
