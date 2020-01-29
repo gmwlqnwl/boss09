@@ -2027,6 +2027,22 @@ while True:
 							)
 					await msg.channel.send(embed=embed, tts=False)
 
+			################ 포인트확인 ################ 
+					if message.content.startswith(command[22]):
+				if basicSetting[10] !="" and basicSetting[12] !="" and 포인트내역 !="" and basicSetting[15] !="" and basicSetting[16] !=""  :
+					SearchID = hello[len(command[22])+1:]
+					gc = gspread.authorize(credentials)
+					wks = gc.open(basicSetting[12]).worksheet(포인트내역)
+
+					wks.update_acell(basicSetting[15], SearchID)
+
+					result = wks.acell(basicSetting[16]).value
+
+					embed = discord.Embed(
+							description= '```' + SearchID + ' 님이 쌓은 포인트는 ' + result + ' 포인트 입니다.```',
+							color=0xff00ff
+							)
+					await msg.channel.send(embed=embed, tts=False)
 	client.loop.create_task(task())
 	try:
 		client.loop.run_until_complete(client.start(access_token))
