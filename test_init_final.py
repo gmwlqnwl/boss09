@@ -1061,6 +1061,22 @@ while True:
 									color=0xff00ff
 									)
 							await msg.channel.send(embed=embed, tts=False)
+					################ 포인트확인 ################ 
+					if message.content.startswith(command[25]):
+						if basicSetting[10] !="" and basicSetting[12] !="" and basicSetting[14] !="" and basicSetting[15] !="" and basicSetting[16] !=""  :
+							SearchID = message.content[len(command[25])+1:]
+							gc = gspread.authorize(credentials)
+							wks = gc.open(basicSetting[12]).worksheet('포인트내역')
+
+							wks.update_acell(basicSetting[15], SearchID)
+
+							result = wks.acell(basicSetting[16]).value
+
+							embed = discord.Embed(
+									description= '```' + SearchID + ' 님이 쌓은 포인트는 ' + result + ' 포인트 입니다.```',
+									color=0xff00ff
+									)
+							await msg.channel.send(embed=embed, tts=False)
 
 			################ 킬 확인 특정 채널에서 하기 ################ 
 			if basicSetting[18] != "":
