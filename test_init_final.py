@@ -1568,6 +1568,28 @@ while True:
 				await ctx.send(embed=embed, tts=False)
 		else:
 			return
+	
+	################ 포인트확인 ################ 
+	@client.command(name=command[29][0], aliases=command[29][1:])
+	async def jungsan_(ctx):
+		if ctx.message.channel.id == basicSetting[7] or ctx.message.channel.id == basicSetting[11]:
+			msg = ctx.message.content[len(ctx.invoked_with)+1:]
+			if basicSetting[10] !="" and basicSetting[12] !="" and basicSetting[14] !="" and basicSetting[15] !="" and basicSetting[16] !=""  :
+				SearchID = msg
+				gc = gspread.authorize(credentials)
+				wks = gc.open(basicSetting[12]).worksheet('포인트내역')
+
+				wks.update_acell(basicSetting[15], SearchID)
+
+				result = wks.acell(basicSetting[16]).value
+
+				embed = discord.Embed(
+						description= '```' + SearchID + ' 님이 쌓은 포인트는 ' + result + ' 포인트 입니다.```',
+						color=0xff00ff
+						)
+				await ctx.send(embed=embed, tts=False)
+		else:
+			return
 
 	################ 보스타임 일괄 설정 ################
 	@client.command(name=command[14][0], aliases=command[14][1:])
